@@ -39,7 +39,7 @@ pip install dpt-rp1-py
 python dptAPP.y path_to_the_folder_to_synchronize
 ```
 
-![example](picture/mainwindow.png)
+![example](picture/mainwindow.png){:height="50%" width="50%"}
 * Fill in the example configuration of device, and load it into the main window
 
 ![example](picture/zotero_dialog.png)
