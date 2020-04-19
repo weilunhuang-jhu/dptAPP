@@ -1,6 +1,8 @@
 # python
 __pycache__/
 
+.vscode/
+
 # self-defined
 *.json
 *test.py

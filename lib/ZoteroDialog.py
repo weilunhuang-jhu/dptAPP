@@ -6,7 +6,7 @@ from pyzotero import zotero
 
 
 self_dir = os.path.dirname(os.path.realpath(__file__))
-CONFIG_PATH = os.path.join(self_dir, "../")
+CONFIG_PATH = os.path.join(self_dir, "../config")
 CONFIG_FILTER = "JSON files (*.json)"
 
 class ZoteroDialog(QDialog):
@@ -22,6 +22,8 @@ class ZoteroDialog(QDialog):
         self.__ui.pushButton_loadConfig.pressed.connect(self.loadConfig)
         self.__ui.pushButton_saveConfig.pressed.connect(self.saveConfig)
         self.__ui.pushButton_syncFromZotero.pressed.connect(self.syncFromZotero)
+        self.__ui.pushButton_syncToZotero.pressed.connect(self.syncToZotero)
+        self.__ui.pushButton_syncBothWay.pressed.connect(self.syncBothWay)
         self.finished.connect(self.closeWindow)
         self.show()
 
@@ -66,8 +68,8 @@ class ZoteroDialog(QDialog):
             print("Error: No config for Zotero yet.")
             return
         
-        self.zot = zotero.Zotero(config['lib_id'], config['lib_type'], config['api_key']);
-        collections = self.zot.collections_top();
+        self.zot = zotero.Zotero(config['lib_id'], config['lib_type'], config['api_key'])
+        collections = self.zot.collections_top()
 
         # TODO: make recursion to access all potential sub_collections
         for collection in collections:
@@ -86,6 +88,12 @@ class ZoteroDialog(QDialog):
                     self.createDirs(collection_sub_path_dpt)
                     self.saveFilesFromCollection(collection_sub, collection_sub_path_dpt)
             self.saveFilesFromCollection(collection, collection_path_dpt)
+
+    def syncToZotero(self):
+        print("Not implemented yet")
+
+    def syncBothWay(self):
+        print("Not implemented yet")
     
     def createDirs(self, path):
         """ Make dirs with parent path and child name
@@ -98,7 +106,7 @@ class ZoteroDialog(QDialog):
 
         """
         if not os.path.isdir(path):
-            os.makedirs(path, exist_ok=True);
+            os.makedirs(path, exist_ok=True)
             print(path + ' is created!')
         else:
             print(path +  ' is existed already.')
@@ -124,7 +132,7 @@ class ZoteroDialog(QDialog):
                 if '.pdf' in file:
                     if not os.path.exists(os.path.join(save_path, file)):
                         print(file)
-                        self.zot.dump(item['key'], path=save_path);
+                        self.zot.dump(item['key'], path=save_path)
 
     def closeWindow(self):
         pass
