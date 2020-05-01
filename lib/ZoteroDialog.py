@@ -1,4 +1,5 @@
 import os
+import glob
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5 import uic
 import json
@@ -71,23 +72,12 @@ class ZoteroDialog(QDialog):
         self.zot = zotero.Zotero(config['lib_id'], config['lib_type'], config['api_key'])
         collections = self.zot.collections_top()
 
-        # TODO: make recursion to access all potential sub_collections
+        # make recursion to access all potential sub_collections
+        DPT_FOLDER = self.parent.getRootPath()
         for collection in collections:
-            # create foler of collection in DPT folder if not exist
-            collection_name = collection['data']['name']
-            DPT_FOLDER = self.parent.getRootPath()
-            collection_path_dpt =  os.path.join(DPT_FOLDER, collection_name)
-            self.createDirs(collection_path_dpt)
-            print('*******************************************')
+            self.syncFromZoteroRecursively(collection, DPT_FOLDER)
 
-            # access all sub_collections in collection
-            if collection['meta']['numCollections'] > 0:
-                for collection_sub in self.zot.collections_sub(collection['key']):
-                    collection_sub_name = collection_sub['data']['name']
-                    collection_sub_path_dpt =  os.path.join(collection_path_dpt, collection_sub_name)
-                    self.createDirs(collection_sub_path_dpt)
-                    self.saveFilesFromCollection(collection_sub, collection_sub_path_dpt)
-            self.saveFilesFromCollection(collection, collection_path_dpt)
+        print("Finished Sync From Zotero")
 
     def syncToZotero(self):
         print("Not implemented yet")
@@ -102,16 +92,45 @@ class ZoteroDialog(QDialog):
             path (str): Path of directory.
 
         Returns:
-            No.
+            A boolean variable showing if the Dir is newly created. 
 
         """
         if not os.path.isdir(path):
             os.makedirs(path, exist_ok=True)
             print(path + ' is created!')
+            return True
         else:
             print(path +  ' is existed already.')
+            return False
 
 
+    def syncFromZoteroRecursively(self, collection, parent_path):
+        """ Synchronize files from collection of zotero recursively.
+            Copy files from Zotero and delete files that are not in Zotero.
+
+        Args:
+            collection (dict): A collection in zotero.
+            parent_path (str): Path of parent folder.
+
+        Returns:
+            No.
+
+        """
+
+        # create foler of collection in DPT folder if not exist
+        collection_name = collection['data']['name']
+        collection_path_dpt =  os.path.join(parent_path, collection_name)
+        is_new_dir = self.createDirs(collection_path_dpt)
+        files_in_zotero = self.saveFilesFromCollection(collection, collection_path_dpt)
+        # delete excessive local files if the local folder exists before
+        if not is_new_dir:
+            self.deleteFilesFromCollection(files_in_zotero, collection_path_dpt)
+        print('*******************************************')
+        print(collection_path_dpt)
+        if collection['meta']['numCollections'] > 0:
+            for collection_sub in self.zot.collections_sub(collection['key']):
+                self.syncFromZoteroRecursively(collection_sub, collection_path_dpt)
+        
     def saveFilesFromCollection(self, folder, save_path):
         """ Copy PDF files from zotero to self-defined location
 
@@ -120,9 +139,11 @@ class ZoteroDialog(QDialog):
             save_path (str): Path to save PDF files.
 
         Returns:
-            No.
+            files: list of pdf files in the collection
 
         """
+        # TODO: consider using set for files to speed up
+        files = []
         # access items in collection
         for item in self.zot.collection_items(folder['key']):
             # check if item is a file
@@ -130,9 +151,34 @@ class ZoteroDialog(QDialog):
                 file = item['data']['filename']
                 # check if the file is .pdf 
                 if '.pdf' in file:
+                    files.append(file)
+                    # check if the file exists already or not 
                     if not os.path.exists(os.path.join(save_path, file)):
-                        print(file)
+                        print(file + "  is added.")
                         self.zot.dump(item['key'], path=save_path)
+
+        return files
+
+    def deleteFilesFromCollection(self, collection_files, local_path):
+        """ Delete local PDF files that are not in Zotero.
+
+        Args:
+            collection_files: list of pdf files in current collection
+            local_path (str): Path to local folder.
+
+        Returns:
+            No.
+
+        """
+
+        # TODO: cached files that are newly created, take sets difference
+        # to delete excessive files
+        local_files = glob.glob(os.path.join(local_path, "*.pdf"))
+        for file in local_files:
+            file_name = os.path.split(file)[-1]
+            if file_name not in collection_files:
+                os.remove(file)
+                print(file_name + " is removed.")
 
     def closeWindow(self):
         pass
