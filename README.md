@@ -54,6 +54,7 @@ python dptAPP.y path_to_the_folder_to_synchronize
 - [x] Load/Save config of zotero account
 - [x] Sync with zotero and remove gohst files in local folder
 - [x] Recursive synchronization in Zotero, currently just support two layers of folders
+- [x] Adjust window in GUI
 - [ ] Optimize sync process by caching and using set
 - [ ] Show/change folder to sync in zotero dialog
 - [ ] Allow user to select specific folder to synchronize with Zotero
@@ -61,4 +62,3 @@ python dptAPP.y path_to_the_folder_to_synchronize
 - [ ] Show status message in text browser to show information in GUI (MainWindow and ZoteroDialog)
 - [ ] Add usage in README
 - [ ] Add help dialog in GUI
-- [ ] Adjust window in GUI
