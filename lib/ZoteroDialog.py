@@ -1,5 +1,6 @@
 import os
 import glob
+import shutil
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5 import uic
 import json
@@ -9,6 +10,7 @@ from pyzotero import zotero
 self_dir = os.path.dirname(os.path.realpath(__file__))
 CONFIG_PATH = os.path.join(self_dir, "../config")
 CONFIG_FILTER = "JSON files (*.json)"
+ZOTERO_STORAGE_HOME = "/home/weilunhuang/Zotero/storage"
 
 class ZoteroDialog(QDialog):
     ''' Zotero dialog '''
@@ -146,16 +148,25 @@ class ZoteroDialog(QDialog):
         files = []
         # access items in collection
         for item in self.zot.collection_items(folder['key']):
+
             # check if item is a file
-            if 'filename' in item['data'].keys():
-                file = item['data']['filename']
-                # check if the file is .pdf 
-                if '.pdf' in file:
-                    files.append(file)
-                    # check if the file exists already or not 
-                    if not os.path.exists(os.path.join(save_path, file)):
-                        print(file + "  is added.")
-                        self.zot.dump(item['key'], path=save_path)
+            if 'filename' not in item['data'].keys():
+                continue
+            file = item['data']['filename']
+            # check if the file is .pdf 
+            if '.pdf' not in file:
+                continue
+            files.append(file)
+            # check if the file exists already or not 
+            dest_fname = os.path.join(save_path, file)
+            if not os.path.exists(dest_fname):
+                # # copy from zotero
+                # self.zot.dump(item['key'], path=save_path)
+
+                # copy from local storage
+                src_fname = os.path.join(ZOTERO_STORAGE_HOME, item['key'], file)
+                shutil.copy(src_fname, dest_fname)
+                print(file + "  is added.")
 
         return files
 

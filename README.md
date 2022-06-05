@@ -36,7 +36,7 @@ pip install dpt-rp1-py
 # Usage
 
 ```
-python dptAPP.y path_to_the_folder_to_synchronize
+python dptAPP.py path_to_the_folder_to_synchronize
 ```
 
 ![example](picture/mainwindow.png){:height="50%" width="50%"}
