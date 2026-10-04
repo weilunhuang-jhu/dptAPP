@@ -1,0 +1,12 @@
+{
+  "security": "your_wifi_security",
+  "ssid": "your_wifi_ssid",
+  "passwd": "your_wifi_password",
+  "dhcp": "true",
+  "static_address": "",
+  "gateway": "",
+  "network_mask": "",
+  "dns1": "",
+  "dns2": "",
+  "proxy": "false"
+}
